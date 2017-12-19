@@ -2,8 +2,9 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-using namespace std;
+#include <math.h>
 
+using namespace std;
 
 template <typename T>
 std::string toString(T val)
@@ -27,7 +28,7 @@ void Number::factorize()
 {
 	// сюда складываем множители
 	std::vector<uint64> dividers;
-		// число, у которого осталось найти множители; 
+		// число, у которого осталось найти множители;
 	uint64 curNum = num;
 		// число, на которое пытаемся делить
 	uint64 probe = 2;
@@ -40,7 +41,7 @@ void Number::factorize()
 		else
 		{
 			// делим пока делится
-			cout << curNum << " " << probe << endl;
+			// cout << curNum << " " << probe << endl;
 			curNum /= probe;
 			root = (uint64)(sqrt(curNum) + 0.5);
 			dividers.push_back(probe);
@@ -48,10 +49,10 @@ void Number::factorize()
 	}
 	dividers.push_back(curNum);
 
-	cout << dividers.size() << endl;
+	// cout << dividers.size() << endl;
 	for (size_t i = 0; i < dividers.size(); i++)
 	{
-		
+
 		decomposition += toString(dividers[i])+" ";
 	}
 	alreadyFactored = true;

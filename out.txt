@@ -1,2 +1,8 @@
 Start printer
 id = 1 Num = 12 Fact : 2 2 3 
+id = 2 Num = 64 Fact : 2 2 2 2 2 2 
+id = 3 Num = 132 Fact : 2 2 3 11 
+id = 4 Num = 19 Fact : 19 
+id = 5 Num = 4656 Fact : 2 2 2 2 3 97 
+id = 6 Num = 7856 Fact : 2 2 2 2 491 
+id = 7 Num = 9846 Fact : 2 3 3 547 

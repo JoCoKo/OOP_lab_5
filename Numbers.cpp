@@ -4,14 +4,20 @@
 #include <Windows.h>
 Numbers::Numbers()
 {
-	std::cout << "Start Constructor" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Start Constructor" << std::endl;
+    }
 	myPrinter = new std::thread(&Numbers::printer, this);
 	for (size_t i = 0; i < MAX_THREADS; i++)
 	{
-		threads[i]=std::thread(&Numbers::worker, this);
+		threads[i]=std::thread(&Numbers::worker, this, i + 1);
 	}
 	myReader = new std::thread(&Numbers::reader, this);
-	std::cout << "Finish Constructor" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Finish Constructor" << std::endl;
+    }
 }
 Numbers::~Numbers()
 {
@@ -20,12 +26,19 @@ Numbers::~Numbers()
 	isFinishedPrinter = true;
 	myPrinter->join();
 	myReader->join();
-	std::cout << "Finish destructor" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Finish Destructor" << std::endl;
+    }
 }
 
+// ########################### READER ##########################
 void Numbers::reader()
 {
-	std::cout << "Start reader" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Start reader" << std::endl;
+    }
 	int id=0;
 	std::ifstream fin("in.txt");
 //	std::ofstream fout;
@@ -40,6 +53,10 @@ void Numbers::reader()
 			{
 				fin >> x;
 				qIn.push(Number(x, id));
+                {
+                    std::unique_lock<std::mutex> locker(log);
+                    std::cout << "reader push in queue number = " << x << " with id = " << id << std::endl;
+                }
 				notifyWorker.notify_all();
 			}
 			else
@@ -54,12 +71,20 @@ void Numbers::reader()
 	notifyWorker.notify_all();
 	notifyPrinter.notify_all();
 	fin.close();
-	std::cout << "Finish reader" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Finish Reader" << std::endl;
+    }
 }
 
+// ########################### PRINTER ##########################
 void Numbers::printer()
 {
-	std::cout << "Start printer" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Start printer" << std::endl;
+    }
+	std::cout << "" << std::endl;
 	bool wait = false;
 	Number curNum;
 	int printedId=0;
@@ -100,12 +125,19 @@ void Numbers::printer()
 		}
 		Sleep(200);
 	}
-	std::cout << "Finish reader" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Finish reader" << std::endl;
+    }
 }
 
-void Numbers::worker()
+// ########################### WORKER ##########################
+void Numbers::worker(size_t myID)
 {
-	std::cout << "Start worker" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Start worker " << myID << std::endl;
+    }
 	bool wait = false;
 	Number curNum;
 	while (true)
@@ -119,6 +151,10 @@ void Numbers::worker()
 				else
 				{
 					wait = true;
+                    {
+                        std::unique_lock<std::mutex> locker(log);
+                        std::cout << "worker " << myID << " sleeping" << std::endl;
+                    }
 					notifyWorker.wait(locker);
 				}
 			}
@@ -131,6 +167,10 @@ void Numbers::worker()
 		}
 		if (!wait)
 		{
+            {
+                std::unique_lock<std::mutex> locker(log);
+                std::cout << "worker " << myID << " calculating " << curNum.num << " with id = " << curNum.id << std::endl;
+            }
 			curNum.factorize();
 			std::unique_lock<std::mutex> locker(mtxOut);
 			Out[curNum.id] = curNum;
@@ -138,5 +178,17 @@ void Numbers::worker()
 		}
 		Sleep(200);
 	}
-	std::cout << "Finish reader" << std::endl;
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Finish worker " << myID << std::endl;
+    }
 }
+
+void Numbers::voidMe()
+{
+    {
+        std::unique_lock<std::mutex> locker(log);
+        std::cout << "Doing something" << std::endl;
+    }
+}
+

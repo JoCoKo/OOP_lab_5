@@ -3,10 +3,11 @@
 #include <thread>
 #include "Number.h"
 #include "Numbers.h"
+#include "Windows.h"
 
 using namespace std;
 
-void main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 /*	Number* t1 = new Number(12);
 	cout << "RESULT:" << t1->getDecomposition() << "#" << endl;
@@ -31,7 +32,12 @@ void main(int argc, char* argv[])
 		cout << "Not enough params" << endl;
 	};
 	*/
-	Numbers * nums = new Numbers();
+	{
+	    Numbers nums;
+        nums.voidMe();
+	}
+	//Sleep(5000);
 	//cout << std::thread::hardware_concurrency() << endl;
-	system("pause");
+	//system("pause");
+	return 0;
 }
