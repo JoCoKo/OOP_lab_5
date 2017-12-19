@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <Windows.h>
+
 Numbers::Numbers()
 {
     {
@@ -13,6 +14,7 @@ Numbers::Numbers()
 	{
 		threads[i]=std::thread(&Numbers::worker, this, i + 1);
 	}
+	Sleep(501);
 	myReader = new std::thread(&Numbers::reader, this);
     {
         std::unique_lock<std::mutex> locker(log);
@@ -23,7 +25,9 @@ Numbers::~Numbers()
 {
 	for (size_t i = 0; i < MAX_THREADS; i++)
 		threads[i].join();
+	Sleep(201);
 	isFinishedPrinter = true;
+	notifyPrinter.notify_one();
 	myPrinter->join();
 	myReader->join();
     {
@@ -41,7 +45,6 @@ void Numbers::reader()
     }
 	int id=0;
 	std::ifstream fin("in.txt");
-//	std::ofstream fout;
 	uint64 x;
 
 	while(!fin.eof())
@@ -53,21 +56,22 @@ void Numbers::reader()
 			{
 				fin >> x;
 				qIn.push(Number(x, id));
-                {
+				Sleep(301);
+ 				notifyWorker.notify_all();
+               {
                     std::unique_lock<std::mutex> locker(log);
                     std::cout << "reader push in queue number = " << x << " with id = " << id << std::endl;
                 }
-				notifyWorker.notify_all();
 			}
 			else
 			{
 				notifyReader.wait(locker);
 			}
 		}
-		Sleep(200);
+		Sleep(100);
 	}
 	isFinished = true;
-	Sleep(1000);
+	Sleep(501);
 	notifyWorker.notify_all();
 	notifyPrinter.notify_all();
 	fin.close();
@@ -84,7 +88,7 @@ void Numbers::printer()
         std::unique_lock<std::mutex> locker(log);
         std::cout << "Start printer" << std::endl;
     }
-	std::cout << "" << std::endl;
+//	std::cout << "" << std::endl;
 	bool wait = false;
 	Number curNum;
 	int printedId=0;
@@ -99,7 +103,7 @@ void Numbers::printer()
 		std::unique_lock<std::mutex> locker(mtxOut);
 		if (Out.size() == 0)
 			if (isFinishedPrinter)
-				return;
+				break;
 			else
 			{
 				notifyPrinter.wait(locker);
@@ -127,7 +131,7 @@ void Numbers::printer()
 	}
     {
         std::unique_lock<std::mutex> locker(log);
-        std::cout << "Finish reader" << std::endl;
+        std::cout << "Finish Printer" << std::endl;
     }
 }
 
@@ -147,15 +151,15 @@ void Numbers::worker(size_t myID)
 			if (qIn.size() == 0)
 			{
 				if (isFinished)
-					return;
+					break;
 				else
 				{
 					wait = true;
-                    {
+  					notifyWorker.wait(locker);
+                  {
                         std::unique_lock<std::mutex> locker(log);
                         std::cout << "worker " << myID << " sleeping" << std::endl;
-                    }
-					notifyWorker.wait(locker);
+                  }
 				}
 			}
 			else
@@ -163,6 +167,7 @@ void Numbers::worker(size_t myID)
 				curNum = qIn.front();
 				qIn.pop();
 				wait = false;
+				notifyReader.notify_all();
 			}
 		}
 		if (!wait)

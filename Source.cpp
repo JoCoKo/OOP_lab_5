@@ -38,6 +38,6 @@ int main(int argc, char* argv[])
 	}
 	//Sleep(5000);
 	//cout << std::thread::hardware_concurrency() << endl;
-	//system("pause");
+	system("pause");
 	return 0;
 }

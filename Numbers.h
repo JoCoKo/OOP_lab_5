@@ -7,7 +7,7 @@
 #include <thread>
 #include <array>
 
-#define MAX_THREADS 3
+#define MAX_THREADS 8
 #define MIN_THREADS 2
 
 class Numbers
@@ -31,7 +31,6 @@ private:
 	bool isFinished=false;
 	bool isFinishedPrinter = false;
 	size_t numWorkers=0;
-	FILE* F;
 	std::condition_variable notifyWorker;
 	std::condition_variable notifyReader;
 	std::condition_variable notifyPrinter;
