@@ -1,0 +1,2 @@
+Start printer
+id = 1 Num = 12 Fact : 2 2 3 
